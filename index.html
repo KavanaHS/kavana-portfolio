@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kavana H S — GCP Data Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1120;
+    --panel:#121A2E;
+    --panel-border:#233052;
+    --stream:#38D9C4;
+    --stream-dim:#1c6e64;
+    --amber:#F5A623;
+    --text:#E8ECF1;
+    --muted:#8B96AB;
+    --muted-2:#5D6A85;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--stream); color:#0B1120; }
+
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    letter-spacing:-0.01em;
+  }
+  .mono{
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 6vw;
+    background:rgba(11,17,32,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(35,48,82,0.6);
+  }
+  .nav-logo{ font-weight:700; font-size:1.05rem; }
+  .nav-logo span{ color:var(--stream); }
+  .nav-links{ display:flex; gap:28px; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; }
+  .nav-links a{ color:var(--muted); transition:color .2s; position:relative; }
+  .nav-links a:hover, .nav-links a:focus-visible{ color:var(--stream); outline:none; }
+  .nav-links a:focus-visible{ outline:2px solid var(--stream); outline-offset:4px; border-radius:2px; }
+
+  @media (max-width:720px){ .nav-links{ display:none; } }
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    min-height:92vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:0 6vw;
+    position:relative;
+  }
+  .hero-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--stream);
+    font-size:0.8rem;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+  }
+  .pulse-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--stream);
+    box-shadow:0 0 0 0 rgba(56,217,196,0.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(56,217,196,0.55); }
+    70%{ box-shadow:0 0 0 10px rgba(56,217,196,0); }
+    100%{ box-shadow:0 0 0 0 rgba(56,217,196,0); }
+  }
+  .hero h1{
+    font-size:clamp(2.6rem, 7vw, 5.2rem);
+    font-weight:700;
+    line-height:1.02;
+  }
+  .hero h1 .last{ color:var(--muted-2); }
+  .hero-role{
+    margin-top:18px;
+    font-size:clamp(1.1rem, 2.4vw, 1.5rem);
+    color:var(--muted);
+    max-width:640px;
+  }
+  .hero-role strong{ color:var(--text); font-weight:600; }
+  .hero-desc{
+    margin-top:22px;
+    max-width:600px;
+    color:var(--muted);
+    font-size:0.98rem;
+  }
+  .hero-links{
+    margin-top:36px;
+    display:flex; gap:14px; flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.82rem;
+    padding:12px 20px;
+    border-radius:6px;
+    border:1px solid var(--panel-border);
+    display:inline-flex; align-items:center; gap:8px;
+    transition:all .2s;
+  }
+  .btn.primary{
+    background:var(--stream);
+    color:#06201c;
+    border-color:var(--stream);
+    font-weight:600;
+  }
+  .btn.primary:hover{ background:#4fe8d2; transform:translateY(-2px); }
+  .btn.ghost:hover{ border-color:var(--stream); color:var(--stream); transform:translateY(-2px); }
+  .btn:focus-visible{ outline:2px solid var(--stream); outline-offset:3px; }
+
+  .hero-meta{
+    position:absolute; bottom:38px; left:6vw; right:6vw;
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:var(--muted-2);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+
+  /* ---------- PIPELINE LAYOUT ---------- */
+  .pipeline{
+    position:relative;
+    max-width:1100px;
+    margin:0 auto;
+    padding:40px 6vw 140px;
+  }
+  .pipeline::before{
+    content:"";
+    position:absolute;
+    left:calc(6vw + 15px);
+    top:0; bottom:120px;
+    width:2px;
+    background:linear-gradient(to bottom, transparent, var(--panel-border) 4%, var(--panel-border) 96%, transparent);
+  }
+  @media (max-width:720px){
+    .pipeline::before{ left:26px; }
+  }
+
+  .stage{
+    position:relative;
+    padding-left:70px;
+    margin-bottom:90px;
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .stage.visible{ opacity:1; transform:translateY(0); }
+  @media (max-width:720px){ .stage{ padding-left:56px; } }
+
+  .stage-node{
+    position:absolute;
+    left:0; top:2px;
+    width:32px; height:32px;
+    border-radius:50%;
+    background:var(--panel);
+    border:2px solid var(--stream-dim);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stage-node::after{
+    content:"";
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--stream);
+  }
+  @media (max-width:720px){
+    .stage-node{ left:-4px; width:26px; height:26px; }
+  }
+
+  .stage-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    color:var(--stream);
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:10px;
+  }
+  .status-pill{
+    font-size:0.62rem;
+    padding:3px 8px;
+    border-radius:20px;
+    background:rgba(52,168,83,0.12);
+    color:#4ADE80;
+    border:1px solid rgba(74,222,128,0.3);
+    letter-spacing:0.05em;
+  }
+  .stage h2{
+    font-size:clamp(1.5rem, 3vw, 2rem);
+    margin-bottom:18px;
+  }
+
+  /* ---------- SUMMARY ---------- */
+  .summary-text{
+    color:var(--muted);
+    font-size:1.02rem;
+    max-width:680px;
+  }
+  .summary-text strong{ color:var(--text); font-weight:600; }
+  .stat-row{
+    display:flex; gap:40px; margin-top:30px; flex-wrap:wrap;
+  }
+  .stat{ }
+  .stat .num{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:2rem; font-weight:700; color:var(--stream);
+  }
+  .stat .lbl{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem; color:var(--muted-2);
+    text-transform:uppercase; letter-spacing:0.08em;
+  }
+
+  /* ---------- SKILLS ---------- */
+  .skill-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
+    gap:14px;
+    margin-top:6px;
+  }
+  .skill-card{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:18px 20px;
+    transition:border-color .2s, transform .2s;
+  }
+  .skill-card:hover{ border-color:var(--stream-dim); transform:translateY(-3px); }
+  .skill-card .k-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    color:var(--amber);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    margin-bottom:10px;
+  }
+  .skill-card .k-items{
+    font-size:0.92rem;
+    color:var(--text);
+    line-height:1.7;
+  }
+
+  /* ---------- EXPERIENCE ---------- */
+  .job{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:26px 28px;
+    margin-bottom:18px;
+  }
+  .job-head{
+    display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;
+    margin-bottom:14px;
+  }
+  .job-title{ font-size:1.1rem; font-weight:600; }
+  .job-title .co{ color:var(--stream); }
+  .job-date{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem; color:var(--muted-2);
+  }
+  .job ul{ padding-left:20px; color:var(--muted); }
+  .job ul li{ margin-bottom:8px; font-size:0.94rem; }
+  .job ul li::marker{ color:var(--stream-dim); }
+  .job ul li strong{ color: var(--text); }
+
+  /* ---------- PROJECTS ---------- */
+  .project-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(320px,1fr));
+    gap:22px;
+  }
+  .project-card{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:26px;
+    display:flex; flex-direction:column;
+    transition:border-color .25s, box-shadow .25s;
+  }
+  .project-card:hover{
+    border-color:var(--stream-dim);
+    box-shadow:0 12px 30px -12px rgba(56,217,196,0.18);
+  }
+  .project-card .p-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem; color:var(--muted-2);
+    text-transform:uppercase; letter-spacing:0.1em;
+    margin-bottom:8px;
+  }
+  .project-card h3{ font-size:1.15rem; margin-bottom:6px; }
+  .project-card .p-client{ color:var(--muted); font-size:0.85rem; margin-bottom:14px; }
+  .project-card p.p-desc{ color:var(--muted); font-size:0.9rem; margin-bottom:16px; flex-grow:0; }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+  .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    padding:4px 9px;
+    border-radius:5px;
+    background:rgba(56,217,196,0.08);
+    color:var(--stream);
+    border:1px solid rgba(56,217,196,0.2);
+  }
+  .project-card ul{ padding-left:18px; color:var(--muted); font-size:0.87rem; }
+  .project-card ul li{ margin-bottom:6px; }
+  .project-card ul li::marker{ color:var(--amber); }
+
+  /* ---------- CERTS ---------- */
+  .cert-list{ display:flex; flex-direction:column; gap:12px; max-width:640px; }
+  .cert-item{
+    display:flex; align-items:center; gap:14px;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:16px 20px;
+  }
+  .cert-item .cert-icon{
+    width:34px; height:34px; border-radius:8px;
+    background:rgba(245,166,35,0.1);
+    border:1px solid rgba(245,166,35,0.3);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--amber); font-family:'IBM Plex Mono',monospace; font-size:0.8rem; font-weight:600;
+    flex-shrink:0;
+  }
+  .cert-item .cert-name{ font-weight:500; font-size:0.95rem; }
+  .cert-item .cert-sub{ color:var(--muted-2); font-size:0.8rem; font-family:'IBM Plex Mono',monospace; }
+
+  /* ---------- EDUCATION ---------- */
+  .edu-list{ display:flex; flex-direction:column; gap:16px; max-width:640px; }
+  .edu-item{ padding-left:16px; border-left:2px solid var(--panel-border); }
+  .edu-item .edu-degree{ font-weight:600; }
+  .edu-item .edu-school{ color:var(--muted); font-size:0.88rem; margin-top:2px; }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  footer{
+    padding:80px 6vw 50px;
+    border-top:1px solid var(--panel-border);
+    text-align:center;
+  }
+  footer .status-pill{ margin:0 auto 22px; display:inline-block; }
+  footer h2{ font-size:clamp(1.6rem,4vw,2.4rem); margin-bottom:14px; }
+  footer p{ color:var(--muted); max-width:480px; margin:0 auto 30px; }
+  .footer-links{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:50px; }
+  footer .bottom-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem; color:var(--muted-2);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">KAVANA<span>.HS</span></div>
+  <div class="nav-links">
+    <a href="#summary">Profile</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
+    <a href="#certifications">Certs</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-eyebrow"><span class="pulse-dot"></span> pipeline_status: production &nbsp;·&nbsp; Bengaluru, Karnataka</div>
+  <h1>Kavana H S<br><span class="last">GCP Data Engineer</span></h1>
+  <p class="hero-role">Building <strong>batch and streaming data pipelines</strong> on Google Cloud — from raw ingestion to analytics-ready BigQuery tables.</p>
+  <p class="hero-desc">2+ years turning messy, multi-source data from e-commerce and insurance systems into reliable, production-grade pipelines — with Python, SQL, BigQuery, and Cloud Composer as the toolkit.</p>
+  <div class="hero-links">
+    <a class="btn primary" href="#projects">View Projects →</a>
+    <a class="btn ghost" href="https://www.linkedin.com/in/kavana-h-s-gowda-233058206" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="btn ghost" href="https://github.com/KavanaHS" target="_blank" rel="noopener">GitHub</a>
+    <a class="btn ghost" href="mailto:kavanahs79@gmail.com">Email</a>
+  </div>
+  <div class="hero-meta">
+    <span>role: data_engineer</span>
+    <span class="mono">scroll ↓ to inspect DAG</span>
+  </div>
+</header>
+
+<main class="pipeline">
+
+  <section class="stage" id="summary">
+    <div class="stage-node"></div>
+    <div class="stage-tag">01 · EXTRACT <span class="status-pill">● profile</span></div>
+    <h2>Professional Summary</h2>
+    <p class="summary-text">
+      <strong>GCP Data Engineer with 2+ years of experience</strong> designing and developing scalable batch and streaming data pipelines on Google Cloud Platform. Proficient in <strong>Python, SQL, BigQuery, Cloud Composer (Airflow), and Cloud Storage</strong>, with hands-on delivery across ETL/ELT development, data modeling, BigQuery optimization, data quality, and workflow orchestration — spanning the <strong>e-commerce and insurance</strong> domains. Strong analytical and collaborative instincts, with a track record of shipping reliable, production-ready data solutions.
+    </p>
+    <div class="stat-row">
+      <div class="stat"><div class="num">2+</div><div class="lbl">Years Experience</div></div>
+      <div class="stat"><div class="num">2</div><div class="lbl">Industry Domains</div></div>
+      <div class="stat"><div class="num">2</div><div class="lbl">Production Platforms Built</div></div>
+      <div class="stat"><div class="num">80%</div><div class="lbl">Manual Work Reduced (RPA)</div></div>
+    </div>
+  </section>
+
+  <section class="stage" id="skills">
+    <div class="stage-node"></div>
+    <div class="stage-tag">02 · TRANSFORM <span class="status-pill">● skills</span></div>
+    <h2>Technical Skills</h2>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="k-label">Cloud & GCP Services</div>
+        <div class="k-items">Google Cloud Platform · BigQuery · Cloud Storage · Cloud Composer (Airflow) · Dataproc</div>
+      </div>
+      <div class="skill-card">
+        <div class="k-label">Programming</div>
+        <div class="k-items">Python · SQL · PySpark</div>
+      </div>
+      <div class="skill-card">
+        <div class="k-label">Databases</div>
+        <div class="k-items">BigQuery · SQL Server</div>
+      </div>
+      <div class="skill-card">
+        <div class="k-label">Concepts</div>
+        <div class="k-items">ETL / ELT · Batch & Streaming Pipelines · Data Warehousing · Data Modeling · Star Schema · Clustering · Data Quality</div>
+      </div>
+      <div class="skill-card">
+        <div class="k-label">Tools</div>
+        <div class="k-items">Git · GitHub · Looker Studio · Power BI</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="experience">
+    <div class="stage-node"></div>
+    <div class="stage-tag">03 · LOAD <span class="status-pill">● experience</span></div>
+    <h2>Work Experience</h2>
+
+    <div class="job">
+      <div class="job-head">
+        <div class="job-title">Data Engineer <span class="co">· LUNA Software Solutions Pvt Ltd</span></div>
+        <div class="job-date mono">JAN 2024 — PRESENT</div>
+      </div>
+      <ul>
+        <li>Developed scalable <strong>batch and streaming ETL pipelines</strong> using GCP, Python, SQL, Apache Beam, and BigQuery.</li>
+        <li>Built and automated data ingestion, transformation, validation, and loading workflows using <strong>Cloud Composer (Airflow)</strong>.</li>
+        <li>Optimized BigQuery performance through <strong>partitioning, clustering, incremental loading</strong>, and SQL tuning.</li>
+        <li>Implemented data quality checks, monitored production pipelines, and resolved ETL failures using Cloud Monitoring and Cloud Logging.</li>
+        <li>Collaborated cross-functionally in an <strong>Agile/Scrum</strong> environment to deliver analytics-ready data for e-commerce and insurance domains.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <div class="job-title">Power Automate Developer <span class="co">· SIHI IT Solutions</span></div>
+        <div class="job-date mono">JUN 2023 — DEC 2023</div>
+      </div>
+      <ul>
+        <li>Designed and implemented <strong>RPA workflows</strong> using Power Automate Desktop and Cloud to automate repetitive business operations.</li>
+        <li>Integrated automation with Excel, SQL Server, SharePoint, and Outlook to streamline reporting and validation.</li>
+        <li>Automated invoice generation and supplier data validation, <strong>reducing manual work by 80%</strong>.</li>
+        <li>Built error-handling, logging, and monitoring mechanisms for smooth process execution.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="stage" id="projects">
+    <div class="stage-node"></div>
+    <div class="stage-tag">04 · ORCHESTRATE <span class="status-pill">● projects</span></div>
+    <h2>Projects</h2>
+    <div class="project-grid">
+
+      <div class="project-card">
+        <div class="p-eyebrow">Project 01</div>
+        <h3>E-commerce Sales Analytics Data Platform</h3>
+        <div class="p-client">Client: Global Retail E-Commerce Company · Role: GCP Data Engineer</div>
+        <div class="tag-row">
+          <span class="tag">BigQuery</span><span class="tag">Cloud Composer</span><span class="tag">Cloud Storage</span><span class="tag">Python</span><span class="tag">Looker Studio</span>
+        </div>
+        <p class="p-desc">End-to-end ETL/ELT pipelines processing customer, product, order, inventory, and payment data from multiple enterprise systems to support analytics, inventory management, and sales reporting.</p>
+        <ul>
+          <li>Designed Airflow DAGs to automate and monitor full data workflows</li>
+          <li>Built partitioned, clustered Star Schema tables in BigQuery</li>
+          <li>Implemented null, duplicate, and referential integrity validation</li>
+          <li>Integrated Cloud Functions for event-driven processing</li>
+        </ul>
+      </div>
+
+      <div class="project-card">
+        <div class="p-eyebrow">Project 02</div>
+        <h3>Insurance Claims Data Engineering Platform</h3>
+        <div class="p-client">Client: Leading Insurance Company · Role: GCP Data Engineer</div>
+        <div class="tag-row">
+          <span class="tag">BigQuery</span><span class="tag">Cloud Composer</span><span class="tag">Cloud Storage</span><span class="tag">Python</span><span class="tag">Looker Studio</span>
+        </div>
+        <p class="p-desc">Cloud-based pipelines processing policy, claims, customer, provider, and payment data to power claims analytics, fraud analysis, and policy performance reporting.</p>
+        <ul>
+          <li>Built duplicate-claim detection and rejected-record handling</li>
+          <li>Partitioned/clustered BigQuery tables for claims & policy analytics</li>
+          <li>Root-caused and resolved ETL failures via Cloud Monitoring/Logging</li>
+          <li>Automated downstream workflows with event-driven Cloud Functions</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="stage" id="certifications">
+    <div class="stage-node"></div>
+    <div class="stage-tag">05 · VALIDATE <span class="status-pill">● certifications</span></div>
+    <h2>Certifications</h2>
+    <div class="cert-list">
+      <div class="cert-item">
+        <div class="cert-icon">PY</div>
+        <div>
+          <div class="cert-name">Python Full Stack Development</div>
+        </div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-icon">NQT</div>
+        <div>
+          <div class="cert-name">TCS National Qualifier Test (NQT) 2024</div>
+          <div class="cert-sub">Score: 67.97%</div>
+        </div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-icon">NCC</div>
+        <div>
+          <div class="cert-name">National Cadet Corps — Republic Day Camp PM Rally, Delhi</div>
+          <div class="cert-sub">2020</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:48px;">Education</h2>
+    <div class="edu-list">
+      <div class="edu-item">
+        <div class="edu-degree">Master of Computer Applications (MCA)</div>
+        <div class="edu-school">Visvesvaraya Technological University</div>
+      </div>
+      <div class="edu-item">
+        <div class="edu-degree">B.Sc. — Physics, Mathematics, Computer Science</div>
+        <div class="edu-school">University of Mysore · Bharathi Degree College</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact">
+  <span class="status-pill">● all systems operational</span>
+  <h2>Let's build the next pipeline.</h2>
+  <p>Open to GCP Data Engineering roles — batch, streaming, or somewhere in between.</p>
+  <div class="footer-links">
+    <a class="btn primary" href="mailto:kavanahs79@gmail.com">kavanahs79@gmail.com</a>
+    <a class="btn ghost" href="https://www.linkedin.com/in/kavana-h-s-gowda-233058206" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="btn ghost" href="https://github.com/KavanaHS" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <div class="bottom-note">Bengaluru, Karnataka · IST</div>
+</footer>
+
+<script>
+  const stages = document.querySelectorAll('.stage');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.15 });
+  stages.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>
